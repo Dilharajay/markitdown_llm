@@ -61,12 +61,14 @@ def main():
         print(f"Error: Directory {input_path} does not exist.")
         sys.exit(1)
         
-    pdfs = list(input_path.glob("*.pdf"))
-    if not pdfs:
-        print(f"No PDF files found in {input_path}")
+    supported_exts = {'.pdf', '.pptx', '.docx', '.xlsx', '.xls', '.html', '.csv', '.json', '.xml', '.jpg', '.jpeg', '.png'}
+    files_to_convert = [f for f in input_path.iterdir() if f.is_file() and f.suffix.lower() in supported_exts]
+    
+    if not files_to_convert:
+        print(f"No supported documents found in {input_path}")
         return
         
-    print(f"Found {len(pdfs)} PDF files in {input_path}. Starting conversion...")
+    print(f"Found {len(files_to_convert)} supported files in {input_path}. Starting conversion...")
     
     clients = get_clients()
     
@@ -77,16 +79,16 @@ def main():
     else:
         print(f"Loaded {len(clients)} LLM providers for fallback: {', '.join(c['name'] for c in clients)}")
 
-    for pdf in pdfs:
-        output_file = pdf.with_suffix(".md")
-        print(f"Converting {pdf.name}...", end=" ", flush=True)
+    for doc in files_to_convert:
+        output_file = doc.with_suffix(".md")
+        print(f"Converting {doc.name}...", end=" ", flush=True)
         
         success = False
         
         if not clients:
             try:
-                md = MarkItDown()
-                result = md.convert(str(pdf))
+                md = MarkItDown(enable_plugins=True)
+                result = md.convert(str(doc))
                 output_file.write_text(result.text_content, encoding="utf-8")
                 print("Done (No LLM).")
             except Exception as e:
@@ -95,8 +97,12 @@ def main():
 
         for provider in clients:
             try:
-                md_llm = MarkItDown(llm_client=provider["client"], llm_model=provider["model"])
-                result = md_llm.convert(str(pdf))
+                md_llm = MarkItDown(
+                    enable_plugins=True,
+                    llm_client=provider["client"], 
+                    llm_model=provider["model"]
+                )
+                result = md_llm.convert(str(doc))
                 output_file.write_text(result.text_content, encoding="utf-8")
                 print(f"Done (via {provider['name']}).")
                 success = True
@@ -106,7 +112,7 @@ def main():
                 time.sleep(2)
                 
         if not success:
-            print(f"\nFailed to convert {pdf.name} with all available providers.")
+            print(f"\nFailed to convert {doc.name} with all available providers.")
 
 if __name__ == "__main__":
     main()

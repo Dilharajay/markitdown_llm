@@ -32,7 +32,9 @@ dependencies = [
   "defusedxml",
   "openai",
   "python-dotenv",
+  "markitdown-ocr",
 ]
+
 
 [project.optional-dependencies]
 all = [
