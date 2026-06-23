@@ -88,6 +88,28 @@ You can also pipe content:
 cat path-to-file.pdf | markitdown
 ```
 
+### Batch Processing with Multi-LLM Fallback
+
+`markitdown-batch` is a built-in CLI tool to perform bulk conversions of PDFs into Markdown files, utilizing a multi-API fallback mechanism (Gemini $\rightarrow$ Groq $\rightarrow$ OpenAI) to circumvent API rate limits and extract images/graphs with high fidelity.
+
+**Setup Environment**
+Create a `.env` file in your working directory (or use `--env` to specify its location) with your API keys. An example is provided in `.env.example`:
+```env
+GEMINI_API_KEY=your_gemini_api_key_here
+GROQ_API_KEY=your_groq_api_key_here
+OPENAI_API_KEY=your_openai_api_key_here
+```
+
+**Usage:**
+Run the tool against a directory containing `.pdf` files.
+```bash
+markitdown-batch "path/to/folder"
+```
+Or run it in the current directory:
+```bash
+markitdown-batch
+```
+
 ### Optional Dependencies
 MarkItDown has optional dependencies for activating various file formats. Earlier in this document, we installed all optional dependencies with the `[all]` option. However, you can also install them individually for more control. For example:
 
